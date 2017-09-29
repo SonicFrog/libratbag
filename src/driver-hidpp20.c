@@ -40,8 +40,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "hidpp20.h"
+#include "hidpp-receiver.h"
 
 #include "libratbag-private.h"
 #include "libratbag-hidraw.h"
@@ -1009,6 +1011,7 @@ hidpp20drv_remove(struct ratbag_device *device)
 
 static int
 hidpp20drv_probe(struct ratbag_device *device)
+
 {
 	int rc;
 	struct hidpp20drv_data *drv_data;
@@ -1045,6 +1048,16 @@ hidpp20drv_probe(struct ratbag_device *device)
 
 	drv_data->dev = dev;
 
+	if (ratbag_device_data_is_wireless(device->data)) {
+		log_debug(device->ratbag, "device is using wireless receiver, extended id required\n");
+		rc = hidpp_receiver_extended_probe(device, dev);
+
+		if (rc) {
+			rc = -ENODEV;
+			goto err;
+		}
+	}
+
 	log_debug(device->ratbag, "'%s' is using protocol v%d.%d\n", ratbag_device_get_name(device), dev->proto_major, dev->proto_minor);
 
 	/* add some defaults that will be overwritten by the device */
@@ -1069,6 +1082,31 @@ err:
 	return rc;
 }
 
+// FIXME: for wireless mice the svg_name is generated out of data from the receiver
+static const char*
+hidpp20drv_get_svg_name(const struct ratbag_device* device) {
+	const char* fmt = "%s.svg";
+	const char *svg_name = ratbag_device_data_get_svg(device->data);
+	char *real_svg;
+
+	if (svg_name)
+		return svg_name;
+
+	unsigned len = strlen(device->name) + strlen(fmt);
+	real_svg = zalloc(len);
+
+	snprintf(real_svg, len, fmt, device->name);
+
+	for (char *p = real_svg; *p; p++)  {
+		if (*p == ' ')
+			*p = '-';
+		else
+			*p = tolower(*p);
+	}
+
+	return real_svg;
+}
+
 struct ratbag_driver hidpp20_driver = {
 	.name = "Logitech HID++2.0",
 	.id = "hidpp20",
@@ -1079,4 +1117,5 @@ struct ratbag_driver hidpp20_driver = {
 	.set_active_profile = hidpp20drv_set_current_profile,
 	.read_button = hidpp20drv_read_button,
 	.read_led = hidpp20drv_read_led,
+	.get_svg_name = hidpp20drv_get_svg_name,
 };

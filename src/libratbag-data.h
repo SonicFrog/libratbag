@@ -42,6 +42,8 @@ const char *
 ratbag_device_data_get_name(const struct ratbag_device_data *data);
 const char *
 ratbag_device_data_get_svg(const struct ratbag_device_data *data);
+int
+ratbag_device_data_is_wireless(const struct ratbag_device_data *data);
 
 /* HID++ 1.0 */
 /**

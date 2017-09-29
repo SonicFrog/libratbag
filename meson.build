@@ -75,6 +75,8 @@ src_libhidpp = [
 	'src/hidpp-generic.c',
 	'src/hidpp10.h',
 	'src/hidpp10.c',
+	'src/hidpp-receiver.c',
+	'src/hidpp-receiver.h',
 	'src/hidpp20.h',
 	'src/hidpp20.c',
 	'src/usb-ids.h'
@@ -536,4 +538,3 @@ configure_file(input : 'tools/toolbox.py',
 
 #### output files ####
 configure_file(output: 'config.h', install: false, configuration: config_h)
-

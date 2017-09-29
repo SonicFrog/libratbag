@@ -70,6 +70,8 @@ struct ratbag_device_data {
 
 	enum driver drivertype;
 
+	bool is_wireless;
+
 	union {
 		struct data_hidpp20 hidpp20;
 		struct data_hidpp10 hidpp10;
@@ -134,6 +136,13 @@ init_data_hidpp20(struct ratbag *ratbag,
 		data->hidpp20.index = num;
 	if (error)
 		g_error_free(error);
+
+	data->is_wireless = g_key_file_get_boolean(keyfile, group, "IsWireless", NULL);
+
+	if (data->is_wireless) {
+		free(data->svg);
+		data->svg = NULL;
+	}
 }
 
 static const struct driver_map {
@@ -167,6 +176,12 @@ const char *
 ratbag_device_data_get_svg(const struct ratbag_device_data *data)
 {
 	return data->svg;
+}
+
+int
+ratbag_device_data_is_wireless(const struct ratbag_device_data *data)
+{
+	return data->is_wireless;
 }
 
 struct ratbag_device_data *
@@ -231,6 +246,7 @@ match(const struct input_id *id, char **strv)
 		i++;
 	}
 
+
 	return false;
 }
 
@@ -268,6 +284,8 @@ file_data_matches(struct ratbag *ratbag,
 		return false;
 	}
 
+
+	data->svg = g_key_file_get_string(keyfile, GROUP_DEVICE, "Svg", NULL);
 	data->driver = g_key_file_get_string(keyfile, GROUP_DEVICE, "Driver", NULL);
 	if (!data->driver) {
 		log_error(ratbag, "Missing Driver in %s\n", basename(path));
@@ -291,8 +309,6 @@ file_data_matches(struct ratbag *ratbag,
 			return false;
 		}
 	}
-
-	data->svg = g_key_file_get_string(keyfile, GROUP_DEVICE, "Svg", NULL);
 
 	*data_out = data;
 	data = NULL;
