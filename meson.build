@@ -281,6 +281,7 @@ data_files = files(
 	'data/devices/logitech-g7.device',
 	'data/devices/logitech-g900.device',
 	'data/devices/logitech-g900-wireless.device',
+	'data/devices/logitech-g903.device',
 	'data/devices/logitech-g9.device',
 	'data/devices/logitech-g9x-[Call-of-Duty-MW3-Edition].device',
 	'data/devices/logitech-g9x-[Original].device',
