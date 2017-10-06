@@ -1,0 +1,6 @@
+# G303 over USB
+[Device]
+Name=Logitech Gaming Mouse G302
+DeviceMatch=usb:046d:c07f
+Svg=logitech-g303.svg
+Driver=hidpp20

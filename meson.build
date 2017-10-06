@@ -266,6 +266,7 @@ data_files = files(
 	'data/devices/gskill-MX-780.device',
 	'data/devices/logitech-g300.device',
 	'data/devices/logitech-g303.device',
+	'data/devices/logitech-g302.device',
 	'data/devices/logitech-g403.device',
 	'data/devices/logitech-g500.device',
 	'data/devices/logitech-g500s.device',
