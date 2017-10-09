@@ -790,6 +790,7 @@ hidpp20drv_read_kbd_reprogrammable_key(struct ratbag_device *device)
 static int
 hidpp20drv_read_color_leds(struct ratbag_device *device)
 {
+	struct led_mapping *mapping = ratbag_device_data_hidpp20_get_leds_mapping(device->data);
 	struct hidpp20drv_data *drv_data = ratbag_get_drv_data(device);
 	int rc;
 
@@ -805,6 +806,10 @@ hidpp20drv_read_color_leds(struct ratbag_device *device)
 	if (rc > 0) {
 		drv_data->num_leds = rc;
 		rc = 0;
+	}
+
+	for (size_t i = 0; i < mapping->count; i++) {
+		drv_data->led_infos.color_leds;
 	}
 
 	return rc;

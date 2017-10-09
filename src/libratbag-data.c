@@ -136,7 +136,8 @@ init_data_hidpp20(struct ratbag *ratbag,
 	const char *group = "Driver/hidpp20";
 	GError *error = NULL;
 	int num;
-	char *led_mapping;
+	gsize len;
+	char **led_mapping;
 
 	data->hidpp20.index = -1;
 
@@ -146,10 +147,11 @@ init_data_hidpp20(struct ratbag *ratbag,
 	if (error)
 		g_error_free(error);
 
-	led_mapping = g_key_file_get_string(keyfile, group, "LedMapping", &error);
+	led_mapping = g_key_file_get_string_list(keyfile, group, "LedMapping", &len, &error);
 
 	if (led_mapping != NULL || !error) {
-		data->hidpp20.leds = led_mapping_from_string(led_mapping);
+		data->hidpp20.leds = led_mapping_from_string(led_mapping, len);
+
 		for (unsigned i = 0; i < data->hidpp20.leds->count; i++) {
 			log_debug(ratbag, "device has %d LEDs\n", data->hidpp20.leds->count);
 		}
@@ -439,4 +441,10 @@ ratbag_device_data_hidpp20_get_index(const struct ratbag_device_data *data)
 	assert(data->drivertype == HIDPP20);
 
 	return data->hidpp20.index;
+}
+
+struct led_mapping*
+ratbag_device_data_hidpp20_get_leds_mapping(const struct ratbag_device_data* data)
+{
+	return data->hidpp20.leds;
 }

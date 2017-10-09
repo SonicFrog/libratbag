@@ -5,4 +5,4 @@ Driver=hidpp20
 Svg=logitech-g703.svg
 
 [Driver/hidpp20]
-LedMapping=logo,side
+LedMapping=logo;side

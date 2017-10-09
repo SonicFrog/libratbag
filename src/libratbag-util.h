@@ -307,52 +307,57 @@ err:
 	return NULL;
 }
 
+#include "libratbag.h"
 
 struct led_mapping {
 	unsigned int count;
-	char **locations;
+	enum ratbag_led_type *locations;
 };
 
-static
-void free_led_mapping(struct led_mapping* mapping)
+static const char* led_mappings[] = {
+	[RATBAG_LED_TYPE_LOGO] = "logo",
+	[RATBAG_LED_TYPE_SIDE] = "side",
+	[RATBAG_LED_TYPE_BATTERY] = "battery",
+	[RATBAG_LED_TYPE_DPI] = "dpi",
+
+	[ 0x04 ... 0xff ] = NULL,
+};
+
+
+static const char* mapping_to_string(enum ratbag_led_type tp)
 {
-	for (unsigned i = 0; i < mapping->count; i++) {
-		free(mapping->locations[i]);
-	}
-	free(mapping);
+	if (led_mappings[tp])
+		return led_mappings[tp];
+	return "unknown";
 }
 
-DEFINE_TRIVIAL_CLEANUP_FUNC(struct led_mapping*, free_led_mapping);
+static enum ratbag_led_type string_to_mapping(const char* str) {
+	size_t len = ARRAY_LENGTH(led_mappings);
 
-static inline struct led_mapping *led_mapping_from_string(const char *str)
-{
-	struct led_mapping *mapping = zalloc(sizeof(struct led_mapping));
-	unsigned i = 1, count = 0;
-	char *current;
-	char *copy = strdup_safe(str);
-	char *base = copy;
-
-	while (str[i]) {
-		if (str[i] == ';') {
-			count++;
-		}
-		i++;
+	for (unsigned i = 0; i < len; i++) {
+		if (strcmp(str, led_mappings[i]) == 0)
+			return i;
 	}
 
-	mapping->locations = zalloc(sizeof(char*) * count);
+	return -1;
+}
 
-	current = strtok(copy, ";");
-	i = 0;
+static inline struct led_mapping*
+led_mapping_from_string(const char **str, size_t len)
+{
+	struct led_mapping *mapping = zalloc(sizeof(struct led_mapping));
+	enum ratbag_led_type type;
 
-	while (current) {
-		size_t len = current - base;
+	mapping->locations = zalloc(len * sizeof(enum ratbag_led_type));
 
-		assert(len <= 2);
+	for (size_t i = 0; i < len; i++) {
+		type = string_to_mapping(str[i]);
 
-		mapping->locations[i] = zalloc(len);
-		strncpy(mapping->locations[i], current, len);
-		i++;
-		current = strtok(NULL, ";");
+		if (type == -1) {
+			free(mapping->locations);
+			free(mapping);
+			return NULL;
+		}
 	}
 
 	return mapping;
