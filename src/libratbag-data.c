@@ -51,6 +51,7 @@ enum driver {
 
 struct data_hidpp20 {
 	int index;
+	struct led_mapping *leds;
 };
 
 struct data_hidpp10 {
@@ -135,12 +136,25 @@ init_data_hidpp20(struct ratbag *ratbag,
 	const char *group = "Driver/hidpp20";
 	GError *error = NULL;
 	int num;
+	char *led_mapping;
 
 	data->hidpp20.index = -1;
 
 	num = g_key_file_get_integer(keyfile, group, "DeviceIndex", &error);
 	if (num != 0 || !error)
 		data->hidpp20.index = num;
+	if (error)
+		g_error_free(error);
+
+	led_mapping = g_key_file_get_string(keyfile, group, "LedMapping", &error);
+
+	if (led_mapping != NULL || !error) {
+		data->hidpp20.leds = led_mapping_from_string(led_mapping);
+		for (unsigned i = 0; i < data->hidpp20.leds->count; i++) {
+			log_debug(ratbag, "device has %d LEDs\n", data->hidpp20.leds->count);
+		}
+	}
+
 	if (error)
 		g_error_free(error);
 }

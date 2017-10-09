@@ -306,3 +306,54 @@ err:
 	dpi_list_free(list);
 	return NULL;
 }
+
+
+struct led_mapping {
+	unsigned int count;
+	char **locations;
+};
+
+static
+void free_led_mapping(struct led_mapping* mapping)
+{
+	for (unsigned i = 0; i < mapping->count; i++) {
+		free(mapping->locations[i]);
+	}
+	free(mapping);
+}
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(struct led_mapping*, free_led_mapping);
+
+static inline struct led_mapping *led_mapping_from_string(const char *str)
+{
+	struct led_mapping *mapping = zalloc(sizeof(struct led_mapping));
+	unsigned i = 1, count = 0;
+	char *current;
+	char *copy = strdup_safe(str);
+	char *base = copy;
+
+	while (str[i]) {
+		if (str[i] == ';') {
+			count++;
+		}
+		i++;
+	}
+
+	mapping->locations = zalloc(sizeof(char*) * count);
+
+	current = strtok(copy, ";");
+	i = 0;
+
+	while (current) {
+		size_t len = current - base;
+
+		assert(len <= 2);
+
+		mapping->locations[i] = zalloc(len);
+		strncpy(mapping->locations[i], current, len);
+		i++;
+		current = strtok(NULL, ";");
+	}
+
+	return mapping;
+}
