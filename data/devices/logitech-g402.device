@@ -1,0 +1,9 @@
+# G402 over USB
+[Device]
+Name=Logitech Gaming Mouse G402 Hyperion Fury
+DeviceMatch=usb:046d:c07e
+Svg=logitech-g303.svg
+Driver=hidpp20
+LedTypes=logo;dpi;
+
+
